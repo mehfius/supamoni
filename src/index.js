@@ -4,6 +4,9 @@ const TELEGRAM_TOKEN = process.env.TELEGRAM_TOKEN;
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_KEY = process.env.SUPABASE_KEY;
 
+console.log(process.env.SUPABASE_URL);
+console.log(process.env.SUPABASE_KEY);
+
 const bot = new TelegramBot(TELEGRAM_TOKEN, { polling: false });
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
