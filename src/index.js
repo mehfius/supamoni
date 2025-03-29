@@ -45,33 +45,8 @@ const subscription = supabase
   )
   .subscribe()
 
-function check_environment_variables() {
-  const required_vars = {
-    TELEGRAM_TOKEN: process.env.TELEGRAM_TOKEN,
-    SUPABASE_URL: process.env.SUPABASE_URL,
-    SUPABASE_KEY: process.env.SUPABASE_KEY
-  }
-
-  let missing_vars = Object.entries(required_vars)
-    .filter(([_, value]) => !value)
-    .map(([key]) => key)
-
-  if (missing_vars.length > 0) {
-    console.error('\x1b[41m\x1b[37m%s\x1b[0m', '🚨 ERRO: Variáveis de ambiente ausentes 🚨')
-    console.error('\x1b[31m%s\x1b[0m', 'As seguintes variáveis de ambiente são necessárias:')
-    missing_vars.forEach((var_name, index) => {
-      console.error(`\x1b[33m${index + 1}. ${var_name}\x1b[0m`)
-    })
-    console.error('\x1b[36m%s\x1b[0m', 'Por favor, configure o arquivo .env ou exporte as variáveis no terminal.')
-    process.exit(1)
-  }
-
-  console.log('\x1b[42m\x1b[30m%s\x1b[0m', '✅ Todas as variáveis de ambiente estão configuradas corretamente!')
-}
-
-console.log('Starting Supabase session monitoring service...')
-check_environment_variables()
-send_startup_message()
+console.log('Starting Supabase session monitoring service...');
+send_startup_message();
 
 bot.on('message', (msg) => {
   const chatId = msg.chat.id;
