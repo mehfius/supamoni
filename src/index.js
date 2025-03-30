@@ -40,7 +40,7 @@ const subscription = supabase
 
         const message = `[${userData.areas}] [${userData.id}] ${userData.label}`
         await bot.sendMessage(1089100690, message)
-        console.log('Payload enviado para o Telegram')
+        console.log('Message sent to Telegram:', message)
       } catch (error) {
         console.error('Erro ao enviar payload para o Telegram:', error.message)
       }
@@ -58,3 +58,26 @@ bot.on('message', (msg) => {
 });
 
 console.log('Bot aguardando mensagens para capturar o Chat ID...');
+
+async function check_connections() {
+  try {
+    const { data, error } = await supabase.from('users').select('count');
+    if (error) {
+      console.error('Supabase connection failed:', error.message);
+      return false;
+    }
+    
+    await bot.getMe();
+    console.log('Health check: Supabase and Telegram connections are OK');
+    return true;
+  } catch (error) {
+    console.error('Telegram connection failed:', error.message);
+    return false;
+  }
+}
+
+// Run health check every 5 minutes
+setInterval(check_connections, 5 * 60 * 1000);
+
+// Run initial check
+check_connections();

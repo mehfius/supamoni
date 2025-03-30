@@ -1,6 +1,6 @@
 {
   "name": "supamoni",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Supabase session monitoring service with Telegram integration",
   "main": "src/index.js",
   "scripts": {
