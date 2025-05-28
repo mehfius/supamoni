@@ -1,23 +1,32 @@
-const TelegramBot = require('node-telegram-bot-api');
+require('dotenv').config();
+
 const { createClient } = require('@supabase/supabase-js');
-const TELEGRAM_TOKEN = process.env.TELEGRAM_TOKEN;
+
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_KEY = process.env.SUPABASE_KEY;
 
-console.log(process.env.SUPABASE_URL);
-console.log(process.env.SUPABASE_KEY);
-
-const bot = new TelegramBot(TELEGRAM_TOKEN, { polling: false });
-const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
-
 async function send_startup_message() {
   try {
-    await bot.sendMessage(1089100690, 'Supamoni service started successfully!');
-    console.log('Startup message sent to Telegram');
+    const response = await fetch('http://hugely-sincere-piranha.ngrok-free.app/send_message', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        email: 'startup@example.com',
+        message: 'Supamoni service started successfully!'
+      })
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to send startup message via fetch: ${response.status} ${response.statusText}`);
+    }
   } catch (error) {
-    console.error('Error sending Telegram message:', error.message);
+    console.error('Error sending startup message via fetch:', error.message);
   }
 }
+
+const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
 const subscription = supabase
   .channel('sessions_changes')
@@ -32,52 +41,33 @@ const subscription = supabase
       try {
         const { data: userData, error: userError } = await supabase
           .from('users')
-          .select('label, areas, id')
+          .select('label, areas, id, email') // O campo 'email' é selecionado aqui
           .eq('id', payload.new.users)
-          .single()
+          .single();
 
-        if (userError) throw userError
+        if (userError) throw userError;
 
-        const message = `[${userData.areas}] [${userData.id}] ${userData.label}`
-        await bot.sendMessage(1089100690, message)
-        console.log('Message sent to Telegram:', message)
+        const message = `[${userData.areas}] [${userData.id}] ${userData.label}`;
+
+        const response = await fetch('http://hugely-sincere-piranha.ngrok-free.app/send_message', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            email: userData.email, // O valor de 'userData.email' é usado aqui
+            message: message
+          })
+        });
+
+        if (!response.ok) {
+          throw new Error(`Failed to send message via fetch: ${response.status} ${response.statusText}`);
+        }
       } catch (error) {
-        console.error('Erro ao enviar payload para o Telegram:', error.message)
+        console.error('Error sending payload via fetch:', error.message);
       }
     }
   )
-  .subscribe()
+  .subscribe();
 
-console.log('Starting Supabase session monitoring service...');
 send_startup_message();
-
-bot.on('message', (msg) => {
-  const chatId = msg.chat.id;
-  console.log(`Chat ID recebido: ${chatId}`);
-  bot.sendMessage(chatId, `Seu Chat ID é: ${chatId}`); // Confirmação
-});
-
-console.log('Bot aguardando mensagens para capturar o Chat ID...');
-
-async function check_connections() {
-  try {
-    const { data, error } = await supabase.from('users').select('count');
-    if (error) {
-      console.error('Supabase connection failed:', error.message);
-      return false;
-    }
-    
-    await bot.getMe();
-    console.log('Health check: Supabase and Telegram connections are OK');
-    return true;
-  } catch (error) {
-    console.error('Telegram connection failed:', error.message);
-    return false;
-  }
-}
-
-// Run health check every 5 minutes
-setInterval(check_connections, 5 * 60 * 1000);
-
-// Run initial check
-check_connections();
