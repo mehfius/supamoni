@@ -41,7 +41,7 @@ const subscription = supabase
       try {
         const { data: userData, error: userError } = await supabase
           .from('users')
-          .select('label, areas, id, email') // O campo 'email' é selecionado aqui
+          .select('label, areas, id, email')
           .eq('id', payload.new.users)
           .single();
 
@@ -55,7 +55,7 @@ const subscription = supabase
             'Content-Type': 'application/json'
           },
           body: JSON.stringify({
-            email: userData.email, // O valor de 'userData.email' é usado aqui
+            email: userData.email,
             message: message
           })
         });
