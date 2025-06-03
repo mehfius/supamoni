@@ -32,7 +32,7 @@ async function sendStartupMessage() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         email: 'startup@example.com',
-        message: 'Supamoni service started successfully!'
+        message: 'Supamoni service started successfully! Version 2.0'
       })
     });
 
